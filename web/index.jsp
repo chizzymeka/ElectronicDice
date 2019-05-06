@@ -67,7 +67,7 @@
     </form>
   </div>
   <div id="bottom" name="bottom">
-    &copy; <span id="currentYear"></span>
+    &copy; <span id="currentYear"></span> | Contact: contact@electronicdice.co.uk
   </div>
 </div>
 </body>

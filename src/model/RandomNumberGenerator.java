@@ -1,6 +1,6 @@
 package model;
 
-public class RandomNumberGeneratorBean {
+public class RandomNumberGenerator {
 
     private String numberCount;
     private String lowerRange;

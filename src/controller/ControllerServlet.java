@@ -8,7 +8,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 
-import model.RandomNumberGeneratorBean;
+import model.RandomNumberGeneratorManager;
+
+import model.RandomNumberGenerator;
 
 @WebServlet(name = "ControllerServlet", loadOnStartup = 1, urlPatterns={"/generatorRandomNumber"})
 public class ControllerServlet extends HttpServlet {
@@ -34,17 +36,32 @@ public class ControllerServlet extends HttpServlet {
             String description = request.getParameter("description");
             String sendEmailCopyToSelf = request.getParameter("sendEmailCopyToSelf");
 
-            RandomNumberGeneratorBean randomNumberGeneratorBean = new RandomNumberGeneratorBean();
-            randomNumberGeneratorBean.setNumberCount(numberCount);
-            randomNumberGeneratorBean.setLowerRange(lowerRange);
-            randomNumberGeneratorBean.setHigherRange(higherRange);
-            randomNumberGeneratorBean.setNumberOfFormatColumns(numberOfFormatColumns);
-            randomNumberGeneratorBean.setUniqueness(uniqueness);
-            randomNumberGeneratorBean.setTrail(trail);
-            randomNumberGeneratorBean.setEmailSubject(emailSubject);
-            randomNumberGeneratorBean.setEmailAddresses(emailAddresses);
-            randomNumberGeneratorBean.setDescription(description);
-            randomNumberGeneratorBean.setSendEmailCopyToSelf(sendEmailCopyToSelf);
+            RandomNumberGenerator randomNumberGenerator = new RandomNumberGenerator();
+            randomNumberGenerator.setNumberCount(numberCount);
+            randomNumberGenerator.setLowerRange(lowerRange);
+            randomNumberGenerator.setHigherRange(higherRange);
+            randomNumberGenerator.setNumberOfFormatColumns(numberOfFormatColumns);
+            randomNumberGenerator.setUniqueness(uniqueness);
+            randomNumberGenerator.setTrail(trail);
+            randomNumberGenerator.setEmailSubject(emailSubject);
+            randomNumberGenerator.setEmailAddresses(emailAddresses);
+            randomNumberGenerator.setDescription(description);
+            randomNumberGenerator.setSendEmailCopyToSelf(sendEmailCopyToSelf);
+
+            HashMap<String, String> dataMap = new HashMap<>();
+            dataMap.put("numberCount", randomNumberGenerator.getNumberCount());
+            dataMap.put("lowerRange", randomNumberGenerator.getLowerRange());
+            dataMap.put("higherRange", randomNumberGenerator.getHigherRange());
+            dataMap.put("numberOfFormatColumns", randomNumberGenerator.getNumberOfFormatColumns());
+            dataMap.put("uniqueness", randomNumberGenerator.getUniqueness());
+            dataMap.put("trail", randomNumberGenerator.getTrail());
+            dataMap.put("emailSubject", randomNumberGenerator.getEmailSubject());
+            dataMap.put("emailAddresses", randomNumberGenerator.getEmailAddresses());
+            dataMap.put("description", randomNumberGenerator.getDescription());
+            dataMap.put("sendEmailCopyToSelf", randomNumberGenerator.getSendEmailCopyToSelf());
+
+            RandomNumberGeneratorManager randomNumberGeneratorManager = new RandomNumberGeneratorManager(dataMap);
+            randomNumberGeneratorManager.validateNumbers();
 
             userPath = "/index";
         }
