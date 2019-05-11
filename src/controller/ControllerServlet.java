@@ -1,5 +1,8 @@
 package controller;
 
+import model.RandomNumberGenerator;
+import model.RandomNumberGeneratorManager;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -7,10 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
-
-import model.RandomNumberGeneratorManager;
-
-import model.RandomNumberGenerator;
 
 @WebServlet(name = "ControllerServlet", loadOnStartup = 1, urlPatterns={"/generatorRandomNumber"})
 public class ControllerServlet extends HttpServlet {
@@ -61,17 +60,10 @@ public class ControllerServlet extends HttpServlet {
             dataMap.put("sendEmailCopyToSelf", randomNumberGenerator.getSendEmailCopyToSelf());
 
             RandomNumberGeneratorManager randomNumberGeneratorManager = new RandomNumberGeneratorManager(dataMap);
-            randomNumberGeneratorManager.validateNumbers();
+            randomNumberGeneratorManager.validateData();
 
-            userPath = "/index";
+            userPath = "index";
         }
-
-        String url = userPath + ".jsp";
-
-        try {
-            request.getRequestDispatcher(url).forward(request, response);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        response.sendRedirect(userPath + ".jsp");
     }
 }

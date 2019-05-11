@@ -1,10 +1,5 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.lang.Math;
-import java.util.Properties;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -12,7 +7,16 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.Date;
+import java.sql.Timestamp;
 
 public class RandomNumberGeneratorManager {
 
@@ -22,25 +26,40 @@ public class RandomNumberGeneratorManager {
         this.dataMap = dataMap;
     }
 
-    public void validateNumbers() {
+    public void validateData() {
 
         long numberCount = Long.parseLong(dataMap.get("numberCount"));
         long lowerRange = Long.parseLong(dataMap.get("lowerRange"));
         long higherRange = Long.parseLong(dataMap.get("higherRange"));
         long numberOfFormatColumns = Long.parseLong(dataMap.get("numberOfFormatColumns"));
-        long maximumNumberCount = 60000L;
-        long maximumRange = 1000000000000L;
+        final long MAXIMUM_NUMBER_COUNT = 60000L;
+        final long MAXIMUM_RANGE = 1000000000000L;
         String uniqueness = dataMap.get("uniqueness");
+        String emailAddresses = dataMap.get("emailAddresses").trim().replaceAll("\\s","");
+        int maximumNumberOfRecipients = 10;
 
-        if (numberCount > maximumNumberCount) {
+        if ("Y".equals(dataMap.get("sendEmailCopyToSelf")) && !emailAddresses.contains("chizzymeka@yahoo.co.uk")) {
+            emailAddresses += "," + "chizzymeka@yahoo.co.uk";
+            maximumNumberOfRecipients = 11;
+        }
+        dataMap.put("emailAddresses", emailAddresses);
+        if (emailAddresses.split(",").length > maximumNumberOfRecipients) {
+            System.out.println("You can only have a maximum of ten recipients.");
+            return;
+        }
+        if (numberCount > MAXIMUM_NUMBER_COUNT) {
             System.out.println("This number must be less than 60,000.");
             return;
         }
-        if (numberOfFormatColumns > numberCount) {
-            System.out.println("The number of columns cannot be greater than the number count.");
+        if (numberOfFormatColumns > 20) {
+            System.out.println("The number of columns cannot be greater than 20.");
             return;
         }
-        if ((lowerRange < 0) || (higherRange > maximumRange)) {
+        if (numberOfFormatColumns > numberCount) {
+            numberOfFormatColumns = numberCount;
+            dataMap.put("numberOfFormatColumns", String.valueOf(numberOfFormatColumns));
+        }
+        if ((lowerRange < 0) || (higherRange > MAXIMUM_RANGE)) {
             System.out.println("This number must be between 0 and 1,000,000,000,000.");
             return;
         }
@@ -55,60 +74,109 @@ public class RandomNumberGeneratorManager {
 
     private void generateRandomNumbers(long numberCount, long lowerRange, long higherRange, String uniqueness) {
 
-        ArrayList<Long> result = new ArrayList<>();
+        ArrayList<Long> randomNumbers = new ArrayList<>();
 
         if (uniqueness.equals("Unique")) {
             for (long i = lowerRange; i <= higherRange; i++) {
-                result.add(i);
+                randomNumbers.add(i);
             }
-            Collections.shuffle(result);
+            Collections.shuffle(randomNumbers);
             for (long i = 0; i < numberCount; i++) {
-                System.out.println(result.get((int)i));
             }
         } else if (uniqueness.equals("nonUnique")) {
             for (long i = lowerRange; i <= higherRange; i++) {
                 long randomNumber = (long) (Math.random() * numberCount) + lowerRange;
-                result.add(randomNumber);
-                System.out.println(randomNumber);
+                randomNumbers.add(randomNumber);
             }
         }
-        formatResult(result);
+
+        if ("placeInTrail".equals(dataMap.get("trail"))) {
+            saveResultToTrail(randomNumbers);
+        } else if ("doNotPlaceInTrail".equals(dataMap.get("trail"))) {
+            setUpEmailMessageContent(randomNumbers);
+        }
     }
 
-    private void formatResult(ArrayList<Long> result) {
+    private void saveResultToTrail(ArrayList<Long> randomNumbers) {
 
-        processEmailAddresses();
+        System.out.println("saveResultToTrail called!");
+        // Save random numbers to trail database.
+
+        setUpEmailMessageContent(randomNumbers);
     }
 
-    private void processEmailAddresses() {
-        String emailAddresses = dataMap.get("emailAddresses");
-        //Format and reassign it to the dataMap, that is, dataMap.put("emailAddresses", FORMATTEDEMAILS);
+    private void setUpEmailMessageContent(ArrayList<Long> randomNumbers) {
+
+        long numberOfFormatColumns = Long.parseLong(dataMap.get("numberOfFormatColumns"));
+        String result = "";
+        long counter = 0;
+
+        for (long randomNumber : randomNumbers) {
+            counter++;
+            result += String.valueOf(randomNumber);
+            if (counter == numberOfFormatColumns) {
+                result += "\n";
+                counter = 0;
+            }
+        }
+
+        try {
+
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            InputStream emailMessageBodyInputStream = classLoader.getResourceAsStream("emailMessageBody.html");
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(emailMessageBodyInputStream));
+            StringBuilder emailMessageBodyStringBuilder = new StringBuilder();
+            String line;
+
+            while ((line = bufferedReader.readLine()) != null) {
+                line = line.replace("descriptionPlaceHolder", dataMap.get("description"));
+                line = line.replace("resultPlaceHolder", result);
+                line = line.replace("numberCountPlaceholder", dataMap.get("numberCount"));
+                line = line.replace("rangePlaceHolder", dataMap.get("lowerRange") + "-" + dataMap.get("higherRange"));
+                line = line.replace("uniquenessPlaceHolder", ("Unique".equals(dataMap.get("uniqueness")) ? "The numbers are unique." : "The numbers are not unique."));
+                line = line.replace("trailLinkPlaceHolder", "TRAIL LINK");
+                line = line.replace("timestampPlaceHolder", new Timestamp(new Date().getTime()).toString());
+                emailMessageBodyStringBuilder.append(line);
+            }
+            bufferedReader.close();
+
+            dataMap.put("emailMessageBody", emailMessageBodyStringBuilder.toString());
+
+            Properties properties = new Properties();
+            properties.load(emailMessageBodyInputStream);
+            
+        } catch (IOException iOException) {
+            iOException.printStackTrace();
+        }
         emailResult();
     }
 
     private void emailResult() {
 
-        String fromEmail = "chizzymeka@yahoo.co.uk";
-        String password ="bgknoccout5114";
-        String emailAddresses = "chizzymeka@yahoo.co.uk, plus447850441897@chizzymeka.co.uk";
-        String[] recipientList = emailAddresses.split(",");
-        InternetAddress[] recipientAddress = new InternetAddress[recipientList.length];
+        String fromEmail = "chizzymeka@gmail.com";
+        String userName = "chizzymeka";
+        String password ="vfbxfhwlsctlubnl";
+        String emailAddresses = dataMap.get("emailAddresses");
+        String[] recipients = emailAddresses.split(",");
+        InternetAddress[] recipientAddress = new InternetAddress[recipients.length];
         int counter = 0;
-        for (String recipient : recipientList) {
+
+        for (String recipient : recipients) {
             try {
-                recipientAddress[counter] = new InternetAddress(recipient.trim());
+                recipientAddress[counter] = new InternetAddress(recipient);
             } catch (AddressException addressException) {
                 addressException.printStackTrace();
             }
             counter++;
         }
 
-        String host = "smtp.mail.yahoo.com";
+        String host = "smtp.gmail.com";
+        String htmlMessage = dataMap.get("emailMessageBody");
 
         Properties properties = System.getProperties();
         properties.put("mail.smtp.starttls.enable", "true");
         properties.put("mail.smtp.host", host);
-        properties.put("mail.smtp.user", fromEmail);
+        properties.put("mail.smtp.user", userName);
         properties.put("mail.smtp.password", password);
         properties.put("mail.smtp.port", "587");
         properties.put("mail.smtp.auth", "true");
@@ -116,22 +184,21 @@ public class RandomNumberGeneratorManager {
         Session session = Session.getDefaultInstance(properties);
 
         try {
+
             MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(fromEmail));
+            message.setContent(htmlMessage, "text/html;charset=UTF-8");
+            message.setFrom(new InternetAddress(userName));
             message.addRecipients(Message.RecipientType.TO, recipientAddress);
             message.setSubject("This is the Subject Line!");
-            message.setText("This is actual message");
             Transport transport = session.getTransport("smtp");
             transport.connect(host, fromEmail, password);
             transport.sendMessage(message, message.getAllRecipients());
             transport.close();
+
             System.out.println("Sent message successfully....");
+
         } catch (MessagingException messagingException) {
             messagingException.printStackTrace();
         }
-    }
-
-    private void saveResultToTrail() {
-
     }
 }

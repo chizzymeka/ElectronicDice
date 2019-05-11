@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Email Message Body</title>
+
+        <style type="text/css">
+            .emailMessageBodyCells{
+                text-align: center;
+            }
+            #emailMessageBodyHeader {
+                background-color: #4CAF50;
+                color: white;
+            }
+            .emailMessageBodyRows:hover {
+                background-color: #f5f5f5;
+            }
+            .emailMessageBodyRows:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+            #emailMessageBodyTableDiv {
+                overflow-x:auto;
+            }
+            .emailMessageBodyRows, .emailMessageBodyCells {
+                border-bottom: 1px solid #ddd;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="emailMessageBodyTableDiv">
+            <table id="emailMessageBodyTable">
+                <tr id="emailMessageBodyHeader">
+                    <th colspan="2">Electronic Dice Result</th>
+                </tr>
+                <tr class="emailMessageBodyRows">
+                    <td colspan="2" class="emailMessageBodyCells">This is a message from Electronic Dice on behalf of Chizzy Meka [loggedInUserFirstNamePlaceHolder] who requested some true random numbers be sent to you.</td>
+                </tr>
+                <tr class="emailMessageBodyRows">
+                    <td colspan="2" class="emailMessageBodyCells"><b>Description of the Numbers</b></td>
+                </tr>
+                <tr class="emailMessageBodyRows">
+                    <td colspan="2" class="emailMessageBodyCells">descriptionPlaceHolder</td>
+                </tr>
+                <tr class="emailMessageBodyRows">
+                    <td colspan="2" class="emailMessageBodyCells"><b>Result</b></td>
+                </tr>
+                <tr class="emailMessageBodyRows">
+                    <td colspan="2" class="emailMessageBodyCells">resultPlaceHolder</td>
+                </tr>
+                <tr class="emailMessageBodyRows">
+                    <td colspan="2" class="emailMessageBodyCells"><b>Generation Parameters</b></td>
+                </tr>
+                <tr class="emailMessageBodyRows">
+                    <td class="emailMessageBodyCells">Number Count: </td>
+                    <td class="emailMessageBodyCells">numberCountPlaceholder</td>
+                </tr>
+                <tr class="emailMessageBodyRows">
+                    <td class="emailMessageBodyCells">Range:</td>
+                    <td class="emailMessageBodyCells">rangePlaceHolder</td>
+                </tr>
+                <tr class="emailMessageBodyRows">
+                    <td class="emailMessageBodyCells">Uniqueness:</td>
+                    <td class="emailMessageBodyCells">uniquenessPlaceHolder</td>
+                </tr>
+                <tr class="emailMessageBodyRows">
+                    <td class="emailMessageBodyCells">Trail:</td>
+                    <td class="emailMessageBodyCells">trailLinkPlaceHolder</td>
+                </tr>
+                <tr class="emailMessageBodyRows">
+                    <td class="emailMessageBodyCells">Timestamp:</td>
+                    <td class="emailMessageBodyCells">timestampPlaceHolder</td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>
